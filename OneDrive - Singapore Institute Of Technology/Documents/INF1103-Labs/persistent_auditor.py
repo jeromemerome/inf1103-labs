@@ -113,6 +113,7 @@ while True:
     if prod_name == "quit" or entry == "quit":
         # Save to inventory.txt ONLY when quitting
         save_inventory(product_list)
+        print("Orders saved to inventory.txt\n")
         break
 
     if prod_name == "invalid" or entry == "invalid":
