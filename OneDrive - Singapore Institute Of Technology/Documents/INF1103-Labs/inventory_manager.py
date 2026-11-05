@@ -6,7 +6,7 @@ FILENAME = "inventory.json"
 
 
 class Product:
-    """Represents one product and controls its own information."""
+    # Controls product and its attributes
 
     def __init__(self, product_id, name, price, stock):
         # Check that the information used to create the product is valid.
@@ -19,29 +19,26 @@ class Product:
         if not isinstance(stock, int) or isinstance(stock, bool) or stock < 0:
             raise ValueError("Stock must be a non-negative whole number.")
 
-        # Double underscores indicate attributes intended to be private.
-        self.__product_id = product_id.strip()
-        self.__name = name.strip()
-        self.__price = float(price)
-        self.__stock = stock
+        self._product_id = product_id.strip()
+        self._name = name.strip()
+        self._price = float(price)
+        self._stock = stock
 
-    # These properties let other code read product details without
-    # directly changing the private attributes.
     @property
     def product_id(self):
-        return self.__product_id
+        return self._product_id
 
     @property
     def name(self):
-        return self.__name
+        return self._name
 
     @property
     def price(self):
-        return self.__price
+        return self._price
 
     @property
     def stock(self):
-        return self.__stock
+        return self._stock
 
     def update_stock(self, quantity):
         # Change stock through this method so the value can be checked first.
@@ -51,24 +48,24 @@ class Product:
         if quantity < 0:
             raise ValueError("Stock cannot be negative.")
 
-        self.__stock = quantity
+        self._stock = quantity
 
     def display_information(self):
         # Print this product's information in a readable format.
         print(
-            f"ID: {self.__product_id} | "
-            f"Name: {self.__name} | "
-            f"Price: ${self.__price:.2f} | "
-            f"Stock: {self.__stock}"
+            f"ID: {self._product_id} | "
+            f"Name: {self._name} | "
+            f"Price: ${self._price:.2f} | "
+            f"Stock: {self._stock}"
         )
 
     def to_dict(self):
         # Convert the object into a dictionary so json.dump can save it.
         return {
-            "id": self.__product_id,
-            "name": self.__name,
-            "price": self.__price,
-            "stock": self.__stock,
+            "id": self._product_id,
+            "name": self._name,
+            "price": self._price,
+            "stock": self._stock,
         }
 
 
@@ -77,23 +74,23 @@ class Inventory:
 
     def __init__(self):
         # The inventory keeps its own list of Product objects.
-        self.__products = []
+        self._products = []
 
     def add_product(self, product):
         # Only Product objects should be added to the inventory.
         if not isinstance(product, Product):
             raise TypeError("Only Product objects can be added.")
-
+        
         # Product IDs must be unique.
         if self.search_product(product.product_id) is not None:
             return False
 
-        self.__products.append(product)
+        self._products.append(product)
         return True
 
     def search_product(self, product_id):
         # Search IDs without distinguishing uppercase and lowercase letters.
-        for product in self.__products:
+        for product in self._products:
             if product.product_id.lower() == product_id.strip().lower():
                 return product
 
@@ -105,11 +102,11 @@ class Inventory:
         print("\nCurrent Inventory")
         print("-" * 60)
 
-        if not self.__products:
+        if not self._products:
             print("No products in inventory.")
         else:
             # Ask each Product object to display its own information.
-            for product in self.__products:
+            for product in self._products:
                 product.display_information()
 
         print("-" * 60 + "\n")
@@ -117,7 +114,7 @@ class Inventory:
     def get_products(self):
         # Return a copy of the list for saving.
         # A copy prevents outside code from replacing the inventory's list.
-        return self.__products.copy()
+        return self._products.copy()
 
 
 def load_inventory():
@@ -203,32 +200,30 @@ def add_product(inventory, transactions):
     product_id = input("Product ID: ").strip()
     name = input("Product Name: ").strip()
 
-    try:
-        price = float(input("Price: ").strip())
-        stock = int(input("Stock Quantity: ").strip())
+    price = float(input("Price: ").strip())
+    stock = int(input("Stock Quantity: ").strip())
 
-        # Create a Product object using the user's details.
-        product = Product(product_id, name, price, stock)
-
+   # Create a Product object using the user's details.
+    product = Product(product_id, name, price, stock)
         # Ask the Inventory object to store the new Product object.
-        if not inventory.add_product(product):
-            print("A product with that ID already exists.\n")
-            return
+    if not isinstance(product_id, int): 
+        print("Product ID must be an integer.")
+        return
+    if not inventory.add_product(product):
+        print("A product with that ID already exists.\n")
+        return
 
         # Record the value of the stock added.
-        transactions.append(
-            {
-                "type": "add_product",
-                "product_id": product.product_id,
-                "amount": product.price * product.stock,
-            }
-        )
+    transactions.append(
+        {
+            "type": "add_product",
+            "product_id": product.product_id,
+            "amount": product.price * product.stock,
+        }
+    )
 
-        print("\nProduct added successfully!\n")
+    print("\nProduct added successfully!\n")
 
-    except ValueError as error:
-        # This catches invalid numbers and invalid product details.
-        print(f"Invalid product details: {error}\n")
 
 
 def update_stock(inventory, transactions):
